@@ -25,6 +25,7 @@ ImageHash = "^4.3.1"
 nonebot2 = {extras = ["fastapi", "httpx", "websockets"], version = "^2.1.1"}
 nonebot-plugin-alconna = "^0.30.6"
 nonebot-plugin-apscheduler = "^0.3.0"
+nonebot-plugin-datastore = "^1.1.2"
 Pillow = "^10.1.0"
 pydantic = "^1.10.13"
 pyquery = "^2.0.0"
@@ -54,7 +55,6 @@ extra_standard_library = ["typing_extensions"]
 
 [tool.ruff]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
-ignore = ["C901"]
 
 line-length = 88
 target-version = "py38"
