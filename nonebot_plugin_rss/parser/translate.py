@@ -3,7 +3,6 @@ from typing import Dict, Optional
 
 import emoji
 from nonebot.log import logger
-from pydantic import AnyHttpUrl
 from nonebot.utils import run_sync
 from deep_translator import BaiduTranslator, DeeplTranslator, GoogleTranslator, single_detection
 
@@ -11,7 +10,7 @@ from ..config import plugin_config
 
 
 @run_sync
-def baidu_translate(text: str, proxies: Optional[Dict[str, AnyHttpUrl]]) -> str:
+def baidu_translate(text: str, proxies: Optional[Dict[str, str]]) -> str:
     try:
         lang = "auto"
         if plugin_config.rss_language_detection_key:
@@ -31,7 +30,7 @@ def baidu_translate(text: str, proxies: Optional[Dict[str, AnyHttpUrl]]) -> str:
 
 
 @run_sync
-def deepl_translate(text: str, proxies: Optional[Dict[str, AnyHttpUrl]]) -> str:
+def deepl_translate(text: str, proxies: Optional[Dict[str, str]]) -> str:
     try:
         lang = "auto"
         if plugin_config.rss_language_detection_key:
@@ -51,7 +50,7 @@ def deepl_translate(text: str, proxies: Optional[Dict[str, AnyHttpUrl]]) -> str:
 
 
 @run_sync
-def google_translate(text: str, proxies: Optional[Dict[str, AnyHttpUrl]]) -> str:
+def google_translate(text: str, proxies: Optional[Dict[str, str]]) -> str:
     try:
         translator = GoogleTranslator(source="auto", target="zh-CN", proxies=proxies)
         return f"🌐翻译（Google）：\n{translator.translate(re.escape(text))}"
@@ -67,8 +66,8 @@ async def handle_translate(content: str) -> str:
     """
     proxies = (
         {
-            "https": plugin_config.rss_proxy,
-            "http": plugin_config.rss_proxy,
+            "https": f"{plugin_config.rss_proxy.host}:{plugin_config.rss_proxy.port}",
+            "http": f"{plugin_config.rss_proxy.host}:{plugin_config.rss_proxy.port}",
         }
         if plugin_config.rss_proxy
         else None
