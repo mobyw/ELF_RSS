@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, Tuple, Optional
 
 import feedparser
@@ -72,6 +73,8 @@ async def start(rss: Rss):
     if first_time:
         # 首次抓取处理
         await save_first_time_fetch(rss, model)
+        rss.last_modified = datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+        rss = await rss.update()
         return
     parser = ParseRss(rss)
     await parser.start(model)

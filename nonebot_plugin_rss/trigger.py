@@ -40,6 +40,8 @@ async def add_job(rss: Rss) -> None:
 
     添加后立即执行一次
     """
+    if rss.id is None:
+        rss = await rss.update()
     delete_job(rss)
     if rss.targets:
         _add_job(rss)
