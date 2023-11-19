@@ -1,16 +1,20 @@
 [tool.poetry]
 name = "ELF_RSS"
-version = "3.0.0"
-description = "QQ机器人 RSS订阅 插件，订阅源建议选择 RSSHub"
+version = "3.0.0-alpha.1"
+description = "RSS 订阅插件，订阅源建议选择 RSSHub"
 authors = ["Quan666 <i@Rori.eMail>"]
 license = "GPL-3.0-only"
 readme = "README.md"
 packages = [
-    { include = "nonebot_plugin_rss", from = "src" },
+    { include = "nonebot_plugin_rss" },
 ]
 homepage = "https://github.com/Quan666/ELF_RSS"
 repository = "https://github.com/Quan666/ELF_RSS"
 keywords = ["nonebot", "nonebot2", "rss" ,"elf" ,"rsshub"]
+
+[tool.nonebot]
+adapters = []
+plugins = ["nonebot_plugin_rss"]
 
 [tool.poetry.dependencies]
 python = "^3.8.3"
@@ -22,10 +26,12 @@ deep-translator = "^1.11.4"
 emoji = "^2.8.0"
 feedparser = "^6.0.10"
 ImageHash = "^4.3.1"
-nonebot2 = {extras = ["fastapi", "httpx", "websockets"], version = "^2.1.1"}
-nonebot-plugin-alconna = "^0.30.6"
+nonebot2 = {extras = ["fastapi", "httpx", "websockets"], version = "^2.1.2"}
+nonebot-plugin-alconna = "^0.33.5"
 nonebot-plugin-apscheduler = "^0.3.0"
 nonebot-plugin-datastore = "^1.1.2"
+nonebot-plugin-orm = {extras = ["default"], version = "^0.6.0"}
+nonebot-plugin-send-anything-anywhere = "^0.4.0"
 Pillow = "^10.1.0"
 pydantic = "^1.10.13"
 pyquery = "^2.0.0"
@@ -34,29 +40,20 @@ yarl = "^1.9.2"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.0.275"
-isort = "^5.10.1"
 black = "^23.1.0"
 pre-commit = "^3.2.2"
 
 [tool.black]
-line-length = 88
+line-length = 120
 target-version = ["py38", "py39", "py310", "py311"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''
 
-[tool.isort]
-profile = "black"
-line_length = 88
-length_sort = true
-skip_gitignore = true
-force_sort_within_sections = true
-extra_standard_library = ["typing_extensions"]
-
 [tool.ruff]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "PT", "Q"]
 
-line-length = 88
+line-length = 120
 target-version = "py38"
 
 [tool.ruff.flake8-pytest-style]

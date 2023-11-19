@@ -2,12 +2,16 @@ from pathlib import Path
 from typing import List, Optional
 
 from nonebot import get_driver
-from nonebot_plugin_datastore import get_plugin_data
+from nonebot.config import Config
+from nonebot_plugin_saa import PlatformTarget
+from nonebot_plugin_localstore import get_data_dir
 from pydantic import Extra, Field, BaseModel, AnyHttpUrl
+
+data_dir: Path = get_data_dir("nonebot_plugin_rss")
 
 
 class ELFConfig(BaseModel, extra=Extra.ignore):
-    rss_proxy: Optional[str] = None
+    rss_proxy: Optional[AnyHttpUrl] = None
     """
     RSS 插件使用的代理地址
     """
@@ -19,7 +23,7 @@ class ELFConfig(BaseModel, extra=Extra.ignore):
     """
     RSSHub 备用地址
     """
-    rss_cache_expire: int = 30
+    rss_cache_expire: int = 10
     """
     RSS 去重数据库记录过期时间，单位天
     """
@@ -27,7 +31,7 @@ class ELFConfig(BaseModel, extra=Extra.ignore):
     """
     RSS 缓存条目数量限制
     """
-    rss_length_limit: int = 1024
+    rss_length_limit: int = 256
     """
     RSS 正文长度限制
     """
@@ -43,9 +47,7 @@ class ELFConfig(BaseModel, extra=Extra.ignore):
     """
     RSS 图片保存名称
     """
-    rss_image_save_path: Path = Field(
-        default=get_plugin_data().data_dir / "images", default_factory=Path
-    )
+    rss_image_save_path: Path = Field(default=data_dir / "images")
     """
     RSS 图片保存路径
     """
@@ -74,6 +76,19 @@ class ELFConfig(BaseModel, extra=Extra.ignore):
     """
     RSS 使用的百度翻译 API Key
     """
+    rss_admin_bot_id: Optional[str] = None
+    """
+    RSS 发送管理员通知的 Bot ID
+    """
+    rss_admin_targets: List[PlatformTarget] = Field(default_factory=list)
+    """
+    RSS 发送管理员通知的目标
+    """
+    rss_hide_url_bots: List[str] = Field(default_factory=list)
+    """
+    RSS 替换链接的 Bot ID 列表
+    """
 
 
-config = ELFConfig(**get_driver().config.dict())
+plugin_config = ELFConfig(**get_driver().config.dict())
+nonebot_config = Config(**get_driver().config.dict())
