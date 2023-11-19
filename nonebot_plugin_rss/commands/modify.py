@@ -192,6 +192,7 @@ async def mod_cmd_handle(
         trigger.delete_job(rss)
         # 修改订阅信息
         rss = rss_modify(rss, result)
+        rss = await rss.update()
         if not rss.stop:
             # 重新添加定时任务
             await trigger.add_job(rss)
@@ -226,6 +227,7 @@ async def mod_cmd_param_confirm(
                 trigger.delete_job(rss)
                 # 修改订阅信息
                 rss = rss_modify(rss, result)
+                rss = await rss.update()
                 if not rss.stop:
                     # 重新添加定时任务
                     await trigger.add_job(rss)
