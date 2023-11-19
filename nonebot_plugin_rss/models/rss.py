@@ -146,19 +146,22 @@ class Rss(Model):
         """
         return [PlatformTarget.deserialize(i) for i in self.targets]
 
-    async def add_target(self, target: PlatformTarget) -> None:
+    async def add_target(self, target: PlatformTarget) -> "Rss":
         """
         添加订阅目标
+
+        同时更新到数据库
         """
         if not self.targets:
             self.targets = [target.json()]
         else:
             targets: List[PlatformTarget] = [PlatformTarget.deserialize(i) for i in self.targets]
             if target in targets:
-                return
+                return self
             target_serialized: str = target.json()
             self.targets.append(target_serialized)
         await self.update()
+        return self
 
     async def delete_target(self, target: PlatformTarget) -> bool:
         """
@@ -190,7 +193,7 @@ class Rss(Model):
             await session.delete(self)
             await session.commit()
 
-    async def update(self) -> None:
+    async def update(self) -> "Rss":
         """
         更新到数据库
         """
@@ -201,6 +204,7 @@ class Rss(Model):
             await session.merge(self)
             await session.commit()
             await session.flush()
+        return self
 
     def description(self, privacy: bool = False) -> str:
         """

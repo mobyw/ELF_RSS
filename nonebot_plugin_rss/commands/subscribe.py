@@ -102,7 +102,7 @@ async def sub_cmd_handle(bot: Bot, name: str, url: str, target: PlatformTarget =
         # 订阅存在时，检查是否已订阅
         trigger.delete_job(rss)
     # 添加订阅目标
-    await rss.add_target(target=target)
+    rss = await rss.add_target(target=target)
     # 添加定时任务
     await trigger.add_job(rss)
     text = f"已添加订阅 {rss.name}，链接为 {rss.url}"
