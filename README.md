@@ -31,3 +31,31 @@ cp .env.template .env.prod
 # 配置完成后运行
 nb run
 ```
+
+使用说明：
+
+- 订阅：`sub abc /example/abc`
+- 退订：`unsub abc`
+- 编辑：`edit abc tr 1`
+- 查看：`show abc`
+
+编辑与查看可以使用 `all` 进行批量操作，例如 `edit all tr 1`，`show all`
+
+可编辑参数列表
+
+    url: 订阅链接
+    time: 订阅更新时间
+    stop: 是否停止订阅
+    proxy: 是否使用代理
+    op: 仅发送图片
+    ot: 仅发送标题
+    cp: 仅包含图片
+    dp: 下载图片
+    tr: 是否开启翻译
+    ck: cookie
+    wk: 白名单关键词
+    bk: 黑名单关键词
+    ft: 过滤器
+    cr: 内容过滤
+    mi: 最大图片数量
+    confirm: 确认批量修改
