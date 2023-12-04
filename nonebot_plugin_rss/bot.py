@@ -128,34 +128,37 @@ async def _send_rss_message(
     """
     发送 RSS 推送消息
     """
+    if not messages:
+        # 消息为空
+        logger.info("RSS 推送消息为空，跳过推送")
+        return False
     logger.trace(f"发送 RSS 推送消息到 {target.json()}")
-    logger.trace(f"消息内容: {messages}")
+    logger.trace(f"消息列表：{[[i.data for i in MessageFactory(m)] for m in messages]}")
     message: MessageFactory
-    if len(messages) == 1:
-        # 构造单条消息
-        if title is not None:
-            message = MessageFactory([Text(f"{title}\n\n"), messages[0]])
-        else:
-            message = MessageFactory(messages[0])
+    # 构造单条消息
+    if title is not None:
+        if bot.self_id in plugin_config.rss_hide_url_bots:
+            # 链接特殊处理
+            title = title.replace(".", "．")
+        message = Text(f"{title}\n\n") + messages[0]
     else:
-        # 构造多条消息
-        if title is not None:
-            messages = [Text(title)] + messages
         message = MessageFactory(messages[0])
+    if len(messages) > 1:
+        # 构造多条消息
         for m in messages[1:]:
             message += Text("\n" + "-" * 32 + "\n")
             message += MessageFactory(m)
     flag = False
     try:
         # 发送消息
-        logger.trace(f"发送消息 {message} 到 {target.json()}")
+        logger.trace(f"发送消息 {[i.data for i in message]}")
         await message.send_to(target=target, bot=bot)
         flag = True
     except Exception as e:
         # 消息发送失败
         error_msg = f"E: {repr(e)}\n消息发送失败！\n"
         logger.error(error_msg)
-        logger.debug(f"Message: {message}")
+        logger.debug(f"Message: {[i.data for i in message]}")
         with suppress(Exception):
             # 发送错误消息
             await MessageFactory(Text(error_msg)).send_to(target=target, bot=bot)
