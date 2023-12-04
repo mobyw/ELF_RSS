@@ -12,6 +12,22 @@
 [x] 数据存储
 [x] 更新推送
 [x] 推送去重
-[ ] 推送过滤
-[ ] 文本翻译
-[ ] 媒体文件下载与保存
+[x] 文本翻译：仅测试了 Google 翻译
+[x] 推送过滤
+[x] 媒体文件保存
+
+运行方法：
+
+```bash
+# 安装依赖
+poetry install
+# 升级数据库
+nb orm upgrade
+# 安装适配器
+nb adapter install nonebot-adapter-qq
+# 复制 .env.template 到 .env.prod
+cp .env.template .env.prod
+# 根据适配器和插件要求编辑 .env.prod
+# 配置完成后运行
+nb run
+```
