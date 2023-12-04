@@ -13,8 +13,8 @@ from .. import trigger
 from ..models import Rss
 from ..config import plugin_config, nonebot_config
 
-rss_mod = Alconna(
-    "mod",
+rss_edit = Alconna(
+    "edit",
     Args["name", str],
     Option("url", Args["url", str]),
     Option("time", Args["time", str]),
@@ -33,8 +33,8 @@ rss_mod = Alconna(
     Option("mi", Args["max_image_number", int]),
     Args["confirm?", str],
 )
-mod_cmd: type[AlconnaMatcher] = on_alconna(
-    rss_mod,
+edit_cmd: type[AlconnaMatcher] = on_alconna(
+    rss_edit,
     aliases={"change", "修改订阅"},
     rule=to_me(),
     block=True,
@@ -42,9 +42,9 @@ mod_cmd: type[AlconnaMatcher] = on_alconna(
 """
 RSS 修改订阅响应器
 
-命令： mod [name] [url | time | stop | proxy | op | ot | cp | dp | tr | ck | wk | bk | ft | cr | mi] [value]
+命令： edit [name] [url | time | stop | proxy | op | ot | cp | dp | tr | ck | wk | bk | ft | cr | mi] [value]
 
-示例： mod abc url /example/abc time 10 tr 1 ft link,title,or mi 10
+示例： edit abc url /example/abc time 10 tr 1 ft link,title,or mi 10
 
 参数：
     name: 订阅名
@@ -72,7 +72,7 @@ RSS 修改订阅响应器
 """
 
 
-class ModifyResult(Duplication):
+class EditResult(Duplication):
     url: Optional[str]
     time: Optional[str]
     cookie: Optional[str]
@@ -90,7 +90,7 @@ class ModifyResult(Duplication):
     max_image_number: Optional[int]
 
 
-def rss_modify(rss: Rss, result: ModifyResult) -> Rss:  # noqa: C901
+def param_set(rss: Rss, result: EditResult) -> Rss:  # noqa: C901
     # 参数 str
     for param in {
         "url",
@@ -136,8 +136,8 @@ def rss_modify(rss: Rss, result: ModifyResult) -> Rss:  # noqa: C901
     return rss
 
 
-@mod_cmd.handle()
-async def mod_cmd_permission(event: Event) -> NoReturn:
+@edit_cmd.handle()
+async def edit_cmd_permission(event: Event) -> NoReturn:
     """
     RSS 修改订阅命令权限检查
 
@@ -146,11 +146,11 @@ async def mod_cmd_permission(event: Event) -> NoReturn:
     user_id = event.get_user_id()
     if user_id not in nonebot_config.superusers:
         # 无权限时，直接结束命令
-        await mod_cmd.finish("你没有权限使用此命令哦")
+        await edit_cmd.finish("你没有权限使用此命令哦")
 
 
-@mod_cmd.handle()
-async def mod_cmd_preprocess(
+@edit_cmd.handle()
+async def edit_cmd_preprocess(
     bot: Bot,
     event: Event,
     name: Match[str],
@@ -161,23 +161,23 @@ async def mod_cmd_preprocess(
     """
     if not name.available:
         # 无参数时直接结束命令
-        await mod_cmd.finish("请在命令后添加订阅名以及要修改的参数")
+        await edit_cmd.finish("请在命令后添加订阅名以及要修改的参数")
     if name.result != "all":
         # 非批量修改
         rss = await Rss.get_rss(name.result, bot.self_id)
         if rss is None:
-            await mod_cmd.finish(f"订阅 {name.result} 不存在，请检查订阅名")
+            await edit_cmd.finish(f"订阅 {name.result} 不存在，请检查订阅名")
         if target not in rss.get_targets():
-            await mod_cmd.finish(f"当前位置未订阅 {name.result}")
+            await edit_cmd.finish(f"当前位置未订阅 {name.result}")
         if len(rss.targets) > 1 and event.get_user_id() not in nonebot_config.superusers:
-            await mod_cmd.finish(f"订阅 {name.result} 为公共订阅，仅超级管理员可修改")
+            await edit_cmd.finish(f"订阅 {name.result} 为公共订阅，仅超级管理员可修改")
 
 
-@mod_cmd.handle()
-async def mod_cmd_handle(
+@edit_cmd.handle()
+async def edit_cmd_handle(
     bot: Bot,
     name: str,
-    result: ModifyResult = AlconnaDuplication(ModifyResult),
+    result: EditResult = AlconnaDuplication(EditResult),
     target: PlatformTarget = Depends(get_target),
 ) -> NoReturn:
     """
@@ -191,7 +191,7 @@ async def mod_cmd_handle(
         # 删除定时任务
         trigger.delete_job(rss)
         # 修改订阅信息
-        rss = rss_modify(rss, result)
+        rss = param_set(rss, result)
         rss = await rss.update()
         if not rss.stop:
             # 重新添加定时任务
@@ -201,18 +201,18 @@ async def mod_cmd_handle(
             # 链接特殊处理
             text = text.replace(".", "．")
         logger.debug(repr(text))
-        await mod_cmd.finish(text)
+        await edit_cmd.finish(text)
     else:
         # 批量修改 检查是否修改了 url
         if isinstance(result.url, str):
-            await mod_cmd.finish("批量修改不允许修改 url")
+            await edit_cmd.finish("批量修改不允许修改 url")
 
 
-@mod_cmd.got_path("confirm", prompt="即将修改所有订阅，回复 y 确认")
-async def mod_cmd_param_confirm(
+@edit_cmd.got_path("confirm", prompt="即将修改所有订阅，回复 y 确认")
+async def edit_cmd_param_confirm(
     bot: Bot,
     confirm: str,
-    result: ModifyResult = AlconnaDuplication(ModifyResult),
+    result: EditResult = AlconnaDuplication(EditResult),
     target: PlatformTarget = Depends(get_target),
 ) -> NoReturn:
     """
@@ -226,7 +226,7 @@ async def mod_cmd_param_confirm(
                 # 删除定时任务
                 trigger.delete_job(rss)
                 # 修改订阅信息
-                rss = rss_modify(rss, result)
+                rss = param_set(rss, result)
                 rss = await rss.update()
                 if not rss.stop:
                     # 重新添加定时任务
@@ -238,7 +238,7 @@ async def mod_cmd_param_confirm(
                 # 链接特殊处理
                 text = text.replace(".", "．")
             logger.debug(text)
-            await mod_cmd.finish(text)
-        await mod_cmd.finish("当前位置没有非公共订阅")
+            await edit_cmd.finish(text)
+        await edit_cmd.finish("当前位置没有非公共订阅")
     else:
-        await mod_cmd.finish("已取消")
+        await edit_cmd.finish("已取消")
