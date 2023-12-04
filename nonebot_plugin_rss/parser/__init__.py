@@ -27,7 +27,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
     """
     logger.trace(f"{rss.name} 开始检查是否有新消息")
     state["new_data"] = await check_new(rss, state["entries"])
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -68,7 +67,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
             new_data.remove(item)
             continue
     state["new_data"] = new_data
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -93,7 +91,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
             new_data[index].image_hash = image_hash
     new_data = [item for index, item in enumerate(new_data) if index not in delete]
     state["new_data"] = new_data
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -136,7 +133,6 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
     if rss.bot_id in plugin_config.rss_hide_url_bots:
         text = text.replace(".", "．")
     state["message"] = text
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -149,7 +145,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
     if rss.only_title or rss.only_pic:
         # 如果开启了只推送标题，跳过正文处理
         state["stop"] = True
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -165,7 +160,6 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
         state["text"] = text
     except Exception as e:
         logger.warning(f"{rss.name} 没有正文内容！{e}")
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -186,7 +180,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
         text = text.strip()
         text = emoji.emojize(text, language="alias")
         state["text"] = text
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -200,8 +193,7 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
         # 翻译
         text = state["text"]
         translation = await handle_translate(text)
-        state["text"] = text + translation
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
+        state["text"] = text + "\n" + translation
     return state
 
 
@@ -215,7 +207,6 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
     if rss.bot_id in plugin_config.rss_hide_url_bots:
         text = text.replace(".", "．")
     state["message"] = state["message"] + text if state["message"] else text
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -231,11 +222,7 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
     text = ""
     images: List[BytesIO] = []
     try:
-        text, images = await handle_media(
-            entry=entry,
-            proxy=rss.proxy,
-            max_num=rss.max_image_number,
-        )
+        text, images = await handle_media(entry=entry, rss=rss)
     except Exception as e:
         logger.warning(f"{rss.name} 处理图片时出现错误：{e}")
     message = state["message"]
@@ -246,7 +233,6 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
     if message:
         message = message + "\n\n"
     state["message"] = message
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -261,7 +247,6 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
         text = text.replace(".", "．")
     if text:
         state["message"] = state["message"] + text if state["message"] else text
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -276,7 +261,6 @@ async def _(rss: Rss, state: ParseState, entry: FeedEntry) -> ParseState:
     text = f"📅 日期：{date.format('YYYY年MM月DD日 HH:mm:ss')}"
     if text:
         state["message"] = state["message"] + text if state["message"] else text
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state
 
 
@@ -305,5 +289,4 @@ async def _(rss: Rss, state: ParseState) -> ParseState:
         logger.error(f"{rss.name} 新消息推送失败，共计：{message_count}")
     else:
         logger.info(f"{rss.name} 没有新信息")
-    logger.trace(f"{rss.name} 上下文消息：{state['text']=} {state['message']=} {state['messages']=}")
     return state

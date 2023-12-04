@@ -142,7 +142,6 @@ async def handle_image(url: str, img_proxy: bool, rss: Optional[Rss] = None) -> 
     """
     处理图片
     """
-    # TODO: 处理图片
     if content := await download_image(url, img_proxy):
         if rss is not None and rss.download_pic:
             _url = URL(url)
@@ -157,11 +156,11 @@ async def handle_image(url: str, img_proxy: bool, rss: Optional[Rss] = None) -> 
     return None
 
 
-async def handle_media(entry: FeedEntry, proxy: bool, max_num: int) -> Tuple[str, List[BytesIO]]:
+async def handle_media(entry: FeedEntry, rss: Rss) -> Tuple[str, List[BytesIO]]:
     """
-    处理媒体文件
+    处理 RSS 媒体文件
     """
-    if max_num == 0:
+    if rss.max_image_number == 0:
         # 不发送图片
         return "", []
     html = Pq(utils.get_summary(entry))
@@ -170,18 +169,18 @@ async def handle_media(entry: FeedEntry, proxy: bool, max_num: int) -> Tuple[str
     # 处理图片
     doc_img = list(html("img").items())
     # 只发送限定数量的图片，防止刷屏
-    if 0 < max_num < len(doc_img):
-        message += f"\n因启用图片数量限制，只展示 {max_num} 张图片："
-        doc_img = doc_img[:max_num]
+    if 0 < rss.max_image_number < len(doc_img):
+        message += f"\n因启用图片数量限制，只展示 {rss.max_image_number} 张图片："
+        doc_img = doc_img[: rss.max_image_number]
     for img in doc_img:
         url = img.attr("src")
-        image = await handle_image(str(url), proxy) if url else None
+        image = await handle_image(str(url), rss.proxy, rss) if url else None
         images.append(image) if image else None
     # 处理视频
     if doc_video := html("video"):
         for video in doc_video.items():
             url = video.attr("poster")
-            image = await handle_image(str(url), proxy) if url else None
+            image = await handle_image(str(url), rss.proxy, rss) if url else None
             images.append(image) if image else None
     return message, images
 
@@ -226,3 +225,4 @@ def save_image(content: bytes, file_url: URL, rss: Rss) -> None:
     save_path = filename_format(file_url=file_url, rss=rss)
     save_path.parent.mkdir(parents=True, exist_ok=True)
     save_path.write_bytes(content)
+    logger.debug(f"图片 [{file_url}] 已保存到 {save_path}")
