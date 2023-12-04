@@ -99,6 +99,9 @@ async def stop_and_notify(rss: Rss, bot: Bot) -> None:
             text = f"{rss.name}[{rss.get_url()}] 第一次抓取失败！已自动停止更新！"
             text += "请检查订阅地址{cookies_str}！" if rss.cookie else "请检查订阅地址！"
         logger.info(text)
+        if bot.self_id in plugin_config.rss_hide_url_bots:
+            # 链接特殊处理
+            text = text.replace(".", "．")
         await send(bot_id=bot.self_id, targets=rss.get_targets(), message=Text(text))
 
 
