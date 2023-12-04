@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ELF_RSS"
-version = "3.0.0-alpha.1"
+version = "3.0.0-alpha.2"
 description = "RSS 订阅插件，订阅源建议选择 RSSHub"
 authors = ["Quan666 <i@Rori.eMail>"]
 license = "GPL-3.0-only"
@@ -42,6 +42,7 @@ yarl = "^1.9.2"
 ruff = "^0.0.275"
 black = "^23.1.0"
 pre-commit = "^3.2.2"
+nb-cli = "^1.2.7"
 
 [tool.black]
 line-length = 120
